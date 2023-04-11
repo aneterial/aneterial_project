@@ -1,0 +1,12 @@
+[submodule "php_laravel"]
+	path = php_laravel
+	url = https://github.com/aneterial/php_laravel.git
+[submodule "php_symfony"]
+	path = php_symfony
+	url = https://github.com/aneterial/php_symfony.git
+[submodule "php_native"]
+	path = php_native
+	url = https://github.com/aneterial/php_native.git
+[submodule "go_native"]
+	path = go_native
+	url = https://github.com/aneterial/go_native.git
