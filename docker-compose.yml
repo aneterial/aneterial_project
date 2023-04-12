@@ -1,0 +1,52 @@
+version: '3.9'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: aneterial-db
+    command: ['--user=root', '--default-authentication-plugin=mysql_native_password']
+    restart: unless-stopped
+    ports:
+      - ${DB_PORT}:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ${DB_PATH_HOST}:${DB_PATH_CONTAINER}
+    networks:
+      - backend
+
+  nginx:
+    image: nginx:1.21
+    container_name: aneterial-nginx
+    restart: unless-stopped
+    working_dir: ${CONTAINER_WORK_PATH}
+    ports:
+      - ${PHP_NATIVE_PORT_EXTERNAL}:${PHP_NATIVE_PORT_INTERNAL}
+    volumes:
+      - ${NGINX_SETTINGS_HOST}:${NGINX_SETTINGS_CONTAINER}
+      - ${NGINX_LOGS_HOST}:${NGINX_LOGS_CONTAINER}
+      - ${PHP_NATIVE_PATH}:${PHP_NATIVE_CONTAINER}
+    networks:
+      - backend
+
+  php-native:
+    build:
+      context: ./php_native/docker/php
+      dockerfile: Dockerfile
+      args:
+        PORT: 9000
+        DIR: ${PHP_NATIVE_CONTAINER}
+    image: aneterial-php-native
+    container_name: aneterial-php-native
+    restart: always
+    volumes:
+      - ${PHP_NATIVE_PATH}:${PHP_NATIVE_CONTAINER}
+    working_dir: ${PHP_NATIVE_CONTAINER}
+    hostname: localhost'
+    networks:
+      - backend
+
+networks:
+  backend:
+    name: bots-backend
+    driver: bridge

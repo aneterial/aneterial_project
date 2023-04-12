@@ -1,0 +1,8 @@
+.env
+.vscode
+
+docker/mysql/data/*
+!docker/mysql/data/.gitkeep
+
+docker/nginx/logs/*
+!docker/nginx/logs/.gitkeep
