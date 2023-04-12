@@ -33,3 +33,40 @@ server {
         fastcgi_param PATH_INFO $fastcgi_path_info;
     }
 }
+
+
+server {
+    listen ${PHP_LARAVEL_PORT_INTERNAL};
+    index index.php index.html;
+    server_name localhost;
+    charset utf-8;
+    root ${PHP_LARAVEL_CONTAINER}/public;
+    error_log  ${NGINX_LOGS_CONTAINER}/error.log;
+    access_log ${NGINX_LOGS_CONTAINER}/access.log;
+
+    gzip on;
+    gzip_disable "msie6";
+    gzip_comp_level 6;
+    gzip_min_length  1100;
+    gzip_buffers 16 8k;
+    gzip_proxied any;
+    gzip_types text/plain application/xml application/javascript text/css text/js text/xml application/x-javascript text/javascript application/json application/xml+rss;
+
+    client_max_body_size 100m;
+    client_body_buffer_size 128k;
+    client_header_timeout 3m;
+    client_body_timeout 3m;
+    send_timeout 3m;
+    client_header_buffer_size 1k;
+    large_client_header_buffers 4 16k;
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass php-laravel-app:${PHP_LARAVEL_FPM_PORT};
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+    }
+}

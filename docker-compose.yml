@@ -23,15 +23,22 @@ services:
     working_dir: ${CONTAINER_WORK_PATH}
     ports:
       - ${PHP_NATIVE_PORT_EXTERNAL}:${PHP_NATIVE_PORT_INTERNAL}
+      - ${PHP_LARAVEL_PORT_EXTERNAL}:${PHP_LARAVEL_PORT_INTERNAL}
     volumes:
-      - ${NGINX_SETTINGS_HOST}:/etc/nginx/templates/default.conf.template
+      - ${NGINX_SETTINGS_HOST}:${NGINX_SETTINGS_CONTAINER}
       - ${NGINX_LOGS_HOST}:${NGINX_LOGS_CONTAINER}
       - ${PHP_NATIVE_PATH}:${PHP_NATIVE_CONTAINER}
+      - ${PHP_LARAVEL_PATH}:${PHP_LARAVEL_CONTAINER}
     environment:
+      NGINX_LOGS_CONTAINER: "${NGINX_LOGS_CONTAINER}"
+
       PHP_NATIVE_PORT_INTERNAL: "${PHP_NATIVE_PORT_INTERNAL}"
       PHP_NATIVE_CONTAINER: "${PHP_NATIVE_CONTAINER}"
-      NGINX_LOGS_CONTAINER: "${NGINX_LOGS_CONTAINER}"
       PHP_NATIVE_FPM_PORT: "${PHP_NATIVE_FPM_PORT}"
+
+      PHP_LARAVEL_PORT_INTERNAL: "${PHP_LARAVEL_PORT_INTERNAL}"
+      PHP_LARAVEL_CONTAINER: "${PHP_LARAVEL_CONTAINER}"
+      PHP_LARAVEL_FPM_PORT: "${PHP_LARAVEL_FPM_PORT}"
     networks:
       backend:
         ipv4_address: 172.26.0.4
@@ -48,13 +55,31 @@ services:
     restart: always
     volumes:
       - ${PHP_NATIVE_PATH}:${PHP_NATIVE_CONTAINER}
-      - ${PHP_NATIVE_PATH}/docker/php/php.ini:/usr/local/etc/php/php.ini
-      - ${PHP_NATIVE_PATH}/docker/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ${PHP_NATIVE_INI_HOST}:${PHP_NATIVE_INI_CONTAINER}
     working_dir: ${PHP_NATIVE_CONTAINER}
     hostname: localhost'
     networks:
       backend:
         ipv4_address: 172.26.0.5
+
+  php-laravel-app:
+    build:
+      context: ${PHP_LARAVEL_PATH}/docker/php
+      dockerfile: Dockerfile
+      args:
+        PORT: ${PHP_LARAVEL_FPM_PORT}
+        DIR: ${PHP_LARAVEL_CONTAINER}
+    image: aneterial-${PHP_LARAVEL}
+    container_name: aneterial-${PHP_LARAVEL}
+    restart: always
+    volumes:
+      - ${PHP_LARAVEL_PATH}:${PHP_LARAVEL_CONTAINER}
+      - ${PHP_LARAVEL_INI_HOST}:${PHP_LARAVEL_INI_CONTAINER}
+    working_dir: ${PHP_LARAVEL_CONTAINER}
+    hostname: localhost'
+    networks:
+      backend:
+        ipv4_address: 172.26.0.6
 
 networks:
   backend:
