@@ -18,3 +18,4 @@ run:
 
 down:
 	docker compose down -v
+	> docker/nginx/logs/access.log > docker/nginx/logs/error.log

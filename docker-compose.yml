@@ -7,13 +7,14 @@ services:
     command: ['--user=root', '--default-authentication-plugin=mysql_native_password']
     restart: unless-stopped
     ports:
-      - ${DB_PORT}:3306
+      - ${DB_PORT_EXTERNAL}:${DB_PORT_INTERNAL}
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
       - ${DB_PATH_HOST}:${DB_PATH_CONTAINER}
     networks:
-      - backend
+      backend:
+        ipv4_address: 172.26.0.3
 
   nginx:
     image: nginx:1.21
@@ -23,30 +24,42 @@ services:
     ports:
       - ${PHP_NATIVE_PORT_EXTERNAL}:${PHP_NATIVE_PORT_INTERNAL}
     volumes:
-      - ${NGINX_SETTINGS_HOST}:${NGINX_SETTINGS_CONTAINER}
+      - ${NGINX_SETTINGS_HOST}:/etc/nginx/templates/default.conf.template
       - ${NGINX_LOGS_HOST}:${NGINX_LOGS_CONTAINER}
       - ${PHP_NATIVE_PATH}:${PHP_NATIVE_CONTAINER}
+    environment:
+      PHP_NATIVE_PORT_INTERNAL: "${PHP_NATIVE_PORT_INTERNAL}"
+      PHP_NATIVE_CONTAINER: "${PHP_NATIVE_CONTAINER}"
+      NGINX_LOGS_CONTAINER: "${NGINX_LOGS_CONTAINER}"
+      PHP_NATIVE_FPM_PORT: "${PHP_NATIVE_FPM_PORT}"
     networks:
-      - backend
+      backend:
+        ipv4_address: 172.26.0.4
 
-  php-native:
+  php-native-app:
     build:
-      context: ./php_native/docker/php
+      context: ${PHP_NATIVE_PATH}/docker/php
       dockerfile: Dockerfile
       args:
-        PORT: 9000
+        PORT: ${PHP_NATIVE_FPM_PORT}
         DIR: ${PHP_NATIVE_CONTAINER}
-    image: aneterial-php-native
-    container_name: aneterial-php-native
+    image: aneterial-${PHP_NATIVE}
+    container_name: aneterial-${PHP_NATIVE}
     restart: always
     volumes:
       - ${PHP_NATIVE_PATH}:${PHP_NATIVE_CONTAINER}
+      - ${PHP_NATIVE_PATH}/docker/php/php.ini:/usr/local/etc/php/php.ini
+      - ${PHP_NATIVE_PATH}/docker/php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
     working_dir: ${PHP_NATIVE_CONTAINER}
     hostname: localhost'
     networks:
-      - backend
+      backend:
+        ipv4_address: 172.26.0.5
 
 networks:
   backend:
-    name: bots-backend
+    name: aneterial-backend
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.26.0.0/16
