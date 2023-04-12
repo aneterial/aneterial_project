@@ -7,6 +7,10 @@ server {
     error_log  ${NGINX_LOGS_CONTAINER}/error.log;
     access_log ${NGINX_LOGS_CONTAINER}/access.log;
 
+    if (!-e $request_filename) {
+        rewrite ^.*$ /index.php last;
+    }
+
     gzip on;
     gzip_disable "msie6";
     gzip_comp_level 6;
@@ -42,6 +46,10 @@ server {
     root ${PHP_LARAVEL_CONTAINER}/public;
     error_log  ${NGINX_LOGS_CONTAINER}/error.log;
     access_log ${NGINX_LOGS_CONTAINER}/access.log;
+
+    if (!-e $request_filename) {
+        rewrite ^.*$ /index.php last;
+    }
 
     gzip on;
     gzip_disable "msie6";
