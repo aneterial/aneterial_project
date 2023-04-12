@@ -34,7 +34,6 @@ server {
     }
 }
 
-
 server {
     listen ${PHP_LARAVEL_PORT_INTERNAL};
     index index.php index.html;
